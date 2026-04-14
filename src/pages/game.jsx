@@ -503,15 +503,17 @@ function PlayScreen({ character, onGameOver, audioManager }) {
         const scaledW = bgW * scale;
         const offset = g.bgOffset % scaledW;
 
+        // Draw solid dark background first
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(0, 0, W, H);
+
         ctx.save();
+        // Use global alpha to darken the image, avoiding a massive full-screen alpha fill
+        ctx.globalAlpha = 0.4;
         for (let x = -offset; x < W; x += scaledW) {
           ctx.drawImage(imgs.bg, x, 0, scaledW, H);
         }
         ctx.restore();
-
-        // Darken overlay for readability
-        ctx.fillStyle = "rgba(0,0,0,0.25)";
-        ctx.fillRect(0, 0, W, H);
       } else {
         // Fallback gradient
         const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -544,9 +546,6 @@ function PlayScreen({ character, onGameOver, audioManager }) {
           ctx.fillRect(p.x, 0, PIPE_WIDTH, p.topH);
 
           ctx.save();
-          ctx.beginPath();
-          ctx.rect(p.x, 0, PIPE_WIDTH, p.topH);
-          ctx.clip();
           // Flip vertically and draw one single image stretched to fill
           ctx.translate(p.x, p.topH);
           ctx.scale(1, -1);
@@ -568,13 +567,8 @@ function PlayScreen({ character, onGameOver, audioManager }) {
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(p.x, bottomY, PIPE_WIDTH, bottomH);
 
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(p.x, bottomY, PIPE_WIDTH, bottomH);
-          ctx.clip();
-          // Draw one single image stretched to fill
+          // Draw one single image stretched to fill (no need to clip, exact dimensions)
           ctx.drawImage(pipeImg, p.x, bottomY, PIPE_WIDTH, bottomH);
-          ctx.restore();
 
           // Bottom pipe border/edge
           ctx.strokeStyle = p.isSpecial ? "#e11d48" : "rgba(255,255,255,0.2)";
