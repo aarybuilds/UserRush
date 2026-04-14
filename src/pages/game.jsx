@@ -447,6 +447,9 @@ function PlayScreen({ character, onGameOver, audioManager }) {
       pipes: [],
       score: 0,
       frame: 0,
+      elapsed: 0,
+      lastSpawnTime: -1800, // spawn first pipe immediately
+      lastTimestamp: null,
       speed: BASE_PIPE_SPEED,
       gameOver: false,
       started: false,
@@ -781,6 +784,8 @@ function PlayScreen({ character, onGameOver, audioManager }) {
       // ── update ──
       if (g.started && !g.gameOver) {
         g.frame++;
+        g.elapsed += timestamp - (g.lastTimestamp || timestamp); // track real ms
+        g.lastTimestamp = timestamp;
         g.groundOffset += g.speed * delta;
         g.bgOffset += g.speed * 0.3 * delta; // parallax background scrolling
 
@@ -801,9 +806,11 @@ function PlayScreen({ character, onGameOver, audioManager }) {
           return;
         }
 
-        // spawn pipes
-        if (g.frame % PIPE_SPAWN_INTERVAL === 0) {
+        // spawn pipes — TIME based (every 1800ms), not frame based
+        const PIPE_SPAWN_MS = 1800;
+        if (g.elapsed - (g.lastSpawnTime || 0) >= PIPE_SPAWN_MS) {
           spawnPipe(g);
+          g.lastSpawnTime = g.elapsed;
         }
 
         // move pipes & collision
