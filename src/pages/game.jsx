@@ -887,15 +887,16 @@ function PlayScreen({ character, onGameOver, audioManager }) {
     };
 
     window.addEventListener("keydown", onKey);
-    canvas.addEventListener("click", onClick);
-    canvas.addEventListener("touchstart", onTouch, { passive: false });
+    // Bind touch/click to window so tapping anywhere on the screen works
+    window.addEventListener("click", onClick);
+    window.addEventListener("touchstart", onTouch, { passive: false });
 
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
       window.removeEventListener("keydown", onKey);
-      canvas.removeEventListener("click", onClick);
-      canvas.removeEventListener("touchstart", onTouch);
+      window.removeEventListener("click", onClick);
+      window.removeEventListener("touchstart", onTouch);
       if (obstacleTimerRef.current) clearTimeout(obstacleTimerRef.current);
     };
   }, [character, initGame, spawnPipe, flap, draw, onGameOver]);
@@ -1077,6 +1078,9 @@ const styles = {
     color: "#fff",
     overflow: "hidden",
     position: "relative",
+    touchAction: "none",            // Prevent zoom/scroll on gestures
+    WebkitUserSelect: "none",       // Prevent text selection highlight on tap
+    userSelect: "none",             // Prevent text selection highlight on tap
   },
   screenCenter: {
     width: "100%",
