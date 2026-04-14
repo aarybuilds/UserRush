@@ -94,9 +94,9 @@ function createAudioManager() {
         const audio = new Audio(src);
         audio.loop = loop;
         audio.volume = volume;
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
         audios[key] = audio;
-      } catch {}
+      } catch { }
     },
     stop(key) {
       if (audios[key]) {
@@ -150,7 +150,7 @@ export default function Game() {
     b.margin = b.padding = "0";
     b.width = b.height = "100%";
     b.background = DARK_BG;
-    b.overflow = "hidden";
+    b.overflow = "auto";
     const r = document.getElementById("root");
     if (r) {
       r.style.width = r.style.height = "100%";
@@ -172,7 +172,7 @@ export default function Game() {
       setHighScore(best);
       try {
         localStorage.setItem("flappyNeta_highScore", best.toString());
-      } catch {}
+      } catch { }
       setScreen("over");
       audioRef.current.stop("bgm");
       if (character) {
@@ -383,7 +383,7 @@ function SelectScreen({ onSelect }) {
                 {ch.name}
               </h3>
               <p style={{ margin: 0, fontSize: 20, color: "#94a3b8" }}>
-                {key === "modi" ? "Mitron, let's fly!" : "Aaj mai udega!"}  
+                {key === "modi" ? "Mitron, let's fly!" : "Aaj mai udega!"}
               </p>
             </div>
           );
@@ -764,22 +764,29 @@ function PlayScreen({ character, onGameOver, audioManager }) {
 
     const ctx = canvas.getContext("2d");
 
-    const loop = () => {
+    let lastTime = null;
+    const TARGET_FPS = 60;
+    const loop = (timestamp) => {
       const g = gameRef.current;
       if (!g) {
         animRef.current = requestAnimationFrame(loop);
         return;
       }
 
+      // Delta time — normalize to 60fps so game runs same speed on all devices
+      if (lastTime === null) lastTime = timestamp;
+      const delta = Math.min((timestamp - lastTime) / (1000 / TARGET_FPS), 3); // cap at 3x to avoid huge jumps
+      lastTime = timestamp;
+
       // ── update ──
       if (g.started && !g.gameOver) {
         g.frame++;
-        g.groundOffset += g.speed;
-        g.bgOffset += g.speed * 0.3; // parallax background scrolling
+        g.groundOffset += g.speed * delta;
+        g.bgOffset += g.speed * 0.3 * delta; // parallax background scrolling
 
         // gravity
-        g.bird.vy += GRAVITY;
-        g.bird.y += g.bird.vy;
+        g.bird.vy += GRAVITY * delta;
+        g.bird.y += g.bird.vy * delta;
 
         // ceiling
         if (g.bird.y - g.bird.radius < 0) {
@@ -802,7 +809,7 @@ function PlayScreen({ character, onGameOver, audioManager }) {
         // move pipes & collision
         for (let i = g.pipes.length - 1; i >= 0; i--) {
           const p = g.pipes[i];
-          p.x -= g.speed;
+          p.x -= g.speed * delta;
 
           // remove offscreen
           if (p.x + PIPE_WIDTH < -10) {
@@ -876,7 +883,11 @@ function PlayScreen({ character, onGameOver, audioManager }) {
     };
     const onClick = () => flap();
     const onTouch = (e) => {
-      e.preventDefault();
+      // Only block default (scroll) when game is active, not on menus
+      const g = gameRef.current;
+      if (g && g.started && !g.gameOver) {
+        e.preventDefault();
+      }
       flap();
     };
 
