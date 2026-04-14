@@ -1065,25 +1065,25 @@ function GameOverScreen({ character, score, highScore, onRestart, onChangeNeta }
 
 const styles = {
   root: {
-    width: "100vw",
-    height: "100vh",
+    width: "100%",
+    minHeight: "100vh",             // Let it expand for tall scrolling content
     background: `linear-gradient(160deg, #020617 0%, #0f172a 50%, #111827 100%)`,
     fontFamily: "'Segoe UI', Arial, sans-serif",
     color: "#fff",
-    overflow: "hidden",
+    overflowY: "auto",              // Let the page scroll!
+    overflowX: "hidden",
     position: "relative",
-    touchAction: "none",            // Prevent zoom/scroll on gestures
     WebkitUserSelect: "none",       // Prevent text selection highlight on tap
     userSelect: "none",             // Prevent text selection highlight on tap
   },
   screenCenter: {
     width: "100%",
-    height: "100%",
+    minHeight: "100vh",             // Let it expand naturally
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: "40px 20px",           // More padding for mobile screens
     boxSizing: "border-box",
   },
   glassCard: {
@@ -1110,11 +1110,13 @@ const styles = {
   },
   playContainer: {
     width: "100%",
-    height: "100%",
+    height: "100vh",                // Force game screen to exactly 100vh
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
+    touchAction: "none",            // ONLY block touch scrolling inside the game
+    overflow: "hidden",             // ONLY block overflow inside the game
   },
   scoreBox: {
     display: "flex",
